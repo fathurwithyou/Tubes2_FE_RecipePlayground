@@ -17,10 +17,8 @@ interface TreeNode extends RawNodeDatum {
   tier?: number;
 }
 
-// Helper function to build a tree node from an element name and elements map
 const buildTreeNode = (name: string, elementsMap: Map<string, Element>, visited = new Set<string>()): TreeNode => {
   if (visited.has(name)) {
-    // Prevent cycles
     return { name };
   }
   visited.add(name);
@@ -30,13 +28,15 @@ const buildTreeNode = (name: string, elementsMap: Map<string, Element>, visited 
     return { name, tier: element?.tier };
   }
 
-  const children: TreeNode[] = [];
-
-  element.recipes.forEach((recipe) => {
-    recipe.forEach(childName => {
-      children.push(buildTreeNode(childName, elementsMap, new Set(visited)));
-    });
+  // Flatten all ingredients from all recipes as children
+  const childrenNames = new Set<string>();
+  element.recipes.forEach(recipe => {
+    recipe.forEach(childName => childrenNames.add(childName as string));
   });
+
+  const children: TreeNode[] = Array.from(childrenNames).map(childName =>
+    buildTreeNode(childName, elementsMap, new Set(visited))
+  );
 
   return {
     name,
