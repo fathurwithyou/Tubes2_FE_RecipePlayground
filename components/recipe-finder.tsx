@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from "react"
 import { Search, Clock, Hash } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
-import RecipeTree from "@/components/recipe-tree"
-import { Slider } from "@/components/ui/slider"
+import { Button } from "../components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
+import { Tabs, TabsList, TabsTrigger } from "../components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select"
+import { Switch } from "../components/ui/switch"
+import { Label } from "../components/ui/label"
+import RecipeTree from "../components/recipe-tree"
+import { Slider } from "../components/ui/slider"
 import { Loader2 } from "lucide-react"
 import { motion } from "framer-motion"
+import { fetchElements, searchRecipes } from "../lib/api"
 
 // Types
 interface Element {
@@ -49,139 +50,53 @@ export default function RecipeFinder() {
   const [error, setError] = useState<string | null>(null)
 
   // Fetch elements on component mount
-  useEffect(() => {
+  
     // In a real implementation, this would fetch from your Golang backend
     // For now, we'll use mock data
-    const mockElements: Element[] = [
-      { id: 1, name: "Air", emoji: "💨", isBasic: true },
-      { id: 2, name: "Earth", emoji: "🌍", isBasic: true },
-      { id: 3, name: "Fire", emoji: "🔥", isBasic: true },
-      { id: 4, name: "Water", emoji: "💧", isBasic: true },
-      { id: 5, name: "Lava", emoji: "🌋", isBasic: false },
-      { id: 6, name: "Mud", emoji: "💩", isBasic: false },
-      { id: 7, name: "Steam", emoji: "♨️", isBasic: false },
-      { id: 8, name: "Pressure", emoji: "🔄", isBasic: false },
-      { id: 9, name: "Stone", emoji: "🪨", isBasic: false },
-      { id: 10, name: "Clay", emoji: "🧱", isBasic: false },
-      { id: 11, name: "Sand", emoji: "🏝️", isBasic: false },
-      { id: 12, name: "Brick", emoji: "🧱", isBasic: false },
-    ]
-    setElements(mockElements)
+  useEffect(() => {
+    const loadElements = async () => {
+      try {
+        const fetchedElements = await fetchElements()
+        setElements(fetchedElements)
+      } catch (err) {
+        setError("Failed to load elements from database.")
+        console.error(err)
+      }
+    }
+    loadElements()
   }, [])
 
   const handleSearch = async () => {
-    if (!targetElement) {
-      setError("Please select a target element")
-      return
-    }
-
-    setLoading(true)
-    setError(null)
-
-    try {
-      // In a real implementation, this would call your Golang backend
-      // For now, we'll simulate a response
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      // Mock search result
-      const mockResult: SearchResult = {
-        recipes: createMockRecipeTree(),
-        visitedNodes: 42,
-        searchTime: 0.35,
-      }
-
-      setSearchResult(mockResult)
-    } catch (err) {
-      setError("Failed to search for recipes. Please try again.")
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
+  if (!targetElement) {
+    setError("Please select a target element")
+    return
   }
 
-  // This function creates a mock recipe tree for demonstration
-  const createMockRecipeTree = (): RecipeNode => {
-    const brick = elements.find((e) => e.name === "Brick") || elements[11]
-    const mud = elements.find((e) => e.name === "Mud") || elements[5]
-    const fire = elements.find((e) => e.name === "Fire") || elements[2]
-    const clay = elements.find((e) => e.name === "Clay") || elements[9]
-    const stone = elements.find((e) => e.name === "Stone") || elements[8]
-    const water = elements.find((e) => e.name === "Water") || elements[3]
-    const earth = elements.find((e) => e.name === "Earth") || elements[1]
-    const lava = elements.find((e) => e.name === "Lava") || elements[4]
-    const air = elements.find((e) => e.name === "Air") || elements[0]
-    const pressure = elements.find((e) => e.name === "Pressure") || elements[7]
-    const sand = elements.find((e) => e.name === "Sand") || elements[10]
+  setLoading(true)
+  setError(null)
 
-    return {
-      element: brick,
-      children: [
-        [
-          {
-            element: mud,
-            children: [
-              [
-                {
-                  element: water,
-                  children: [],
-                },
-                {
-                  element: earth,
-                  children: [],
-                },
-              ],
-            ],
-          },
-          {
-            element: fire,
-            children: [],
-          },
-        ],
-        [
-          {
-            element: clay,
-            children: [],
-          },
-          {
-            element: stone,
-            children: [
-              [
-                {
-                  element: lava,
-                  children: [
-                    [
-                      {
-                        element: earth,
-                        children: [],
-                      },
-                      {
-                        element: fire,
-                        children: [],
-                      },
-                    ],
-                  ],
-                },
-                {
-                  element: air,
-                  children: [],
-                },
-              ],
-              [
-                {
-                  element: earth,
-                  children: [],
-                },
-                {
-                  element: pressure,
-                  children: [],
-                },
-              ],
-            ],
-          },
-        ],
-      ],
+  try {
+    // Optional delay for testing purposes; remove if not needed
+    await new Promise<void>((resolve) => setTimeout(resolve, 1500))
+
+    const params = {
+      targetElement,
+      startElement: startElement === "basic" ? undefined : startElement,
+      algorithm,
+      findMultiple,
+      maxRecipes: findMultiple ? maxRecipes : undefined,
     }
+
+    const searchResult = await searchRecipes(params)
+    setSearchResult(searchResult)
+  } catch (err) {
+    setError("Failed to search for recipes. Please try again.")
+    console.error(err)
+  } finally {
+    setLoading(false)
   }
+}
+  
 
   return (
     <div className="space-y-6">
