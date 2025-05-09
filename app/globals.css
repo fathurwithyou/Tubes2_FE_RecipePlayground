@@ -1,26 +1,183 @@
-@import "tailwindcss";
+/* Global styles for Little Alchemy 2 Recipe Finder */
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* Import modern clean font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #000;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Changed from flex-start to center */
+  min-height: 100vh;
+  flex-direction: column;
+  text-align: center;
+}
+
+/* Welcome text -> main page */
+.welcome-text {
+  font-size: 48px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow:
+    0 0 5px #fff,
+    0 0 10px #fff,
+    0 0 20px #fff,
+    0 0 40px #fff;
+  margin-bottom: 40px;
+  user-select: none;
+}
+
+
+.main-container {
+  max-width: 960px;
+  width: 90vw;
+  margin: 40px auto;
+  background: #111;
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px #fff;
+  box-sizing: border-box;
+}
+
+/* headings */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+
+button {
+  background-color: #222;
+  border: 2px solid #fff;
+  color: #fff;
+  border-radius: 6px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  font-weight: 600;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  user-select: none;
+}
+
+button:hover {
+  background-color: #444;
+  box-shadow: 0 0 10px #fff;
+}
+
+
+input[type="text"],
+input[type="number"] {
+  border: 2px solid #fff;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 16px;
+  font-family: 'Inter', sans-serif;
+  background-color: #000;
+  color: #fff;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus {
+  outline: none;
+  border-color: #fff;
+  box-shadow: 0 0 8px #fff;
+}
+
+/* container buat algorithm selector */
+.controls {
+  margin-bottom: 25px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.controls label {
+  display: inline-block;
+  padding: 10px 20px;
+  border: 2px solid #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  user-select: none;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+}
+
+/* highlight selected */
+.controls input[type="radio"]:checked + label {
+  background-color: #fff;
+  color: #000;
+  box-shadow: 0 0 10px #fff;
+}
+
+
+.controls input[type="radio"] {
+  display: none;
+}
+
+/* container recipe tree */
+.recipe-tree-container {
+  margin-top: 30px;
+  overflow-x: auto;
+  padding-bottom: 20px;
+  background-color: #111;
+  border: 2px solid #fff;
+  border-radius: 8px;
+  box-shadow: inset 0 0 10px #fff;
+  color: #fff;
+}
+
+/* styling recipe tree */
+.recipe-tree ul {
+  list-style-type: none;
+  padding-left: 20px;
+  border-left: 2px solid #fff;
+  margin-left: 15px;
+}
+
+.recipe-tree li {
+  padding: 6px 0;
+  font-weight: 600;
+  color: #fff;
+}
+
+.recipe-tree li > div {
+  padding-left: 8px;
+}
+
+#treeWrapper path.link {
+  stroke: white !important;
+}
+
+
+@media (max-width: 768px) {
+  .main-container {
+    padding: 20px;
+    width: 95vw;
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+
+  button {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  label {
+    font-size: 14px;
+  }
+
+  .controls {
+    gap: 15px;
+    padding: 10px 0;
+  }
 }
