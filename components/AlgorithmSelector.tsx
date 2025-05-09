@@ -50,7 +50,7 @@ const AlgorithmSelector: React.FC<AlgorithmSelectorProps> = ({
             checked={mode === 'shortest'}
             onChange={() => setMode('shortest')}
           />
-          Find Shortest Recipe
+          Find Recipe
         </label>
         <label style={{ marginLeft: '10px' }}>
           <input

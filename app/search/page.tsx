@@ -25,19 +25,15 @@ const FinderPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // pilih method
   const [algorithm, setAlgorithm] = useState<string>('BFS');
   const [mode, setMode] = useState<string>('shortest');
   const [maxRecipes, setMaxRecipes] = useState<number>(1);
 
-
   const [searchTime, setSearchTime] = useState<number | null>(null);
   const [visitedNodes, setVisitedNodes] = useState<number | null>(null);
 
-  // state input user buat elemen name
   const [targetElement, setTargetElement] = useState<string>('');
 
-  // Coba tes di api/elements
   useEffect(() => {
     fetch('/api/elements')
       .then((res) => {
@@ -56,7 +52,6 @@ const FinderPage: React.FC = () => {
       });
   }, []);
 
-  // Calling API dri backend
   const performSearch = () => {
     if (!targetElement) {
       alert('Please enter an element name to search');
@@ -65,7 +60,6 @@ const FinderPage: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    // buat query
     const params = new URLSearchParams();
     params.append('target', targetElement);
     params.append('algorithm', algorithm);
@@ -93,19 +87,17 @@ const FinderPage: React.FC = () => {
       });
   };
 
-  // messages
   if (loading) {
-    return <div>Loading...</div>;
+    return <div style={{ backgroundColor: 'white', color: 'black', minHeight: '100vh' }}>Loading...</div>;
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <div style={{ backgroundColor: 'white', color: 'black', minHeight: '100vh' }}>Error: {error}</div>;
   }
 
-  // masi polosan
   return (
-    <div>
-      <h1>Recipe Tree</h1>
+    <div style={{ backgroundColor: 'white', color: 'black', minHeight: '100vh', padding: '20px' }}>
+      <h1 style={{color: 'black'}}>Recipe Tree</h1>
       <AlgorithmSelector
         algorithm={algorithm}
         setAlgorithm={setAlgorithm}
@@ -115,13 +107,21 @@ const FinderPage: React.FC = () => {
         setMaxRecipes={setMaxRecipes}
       />
       <div style={{ marginBottom: '20px' }}>
-        <label>
+        <label style={{ color: 'black' }}>
           Target Element:{' '}
           <input
             type="text"
             value={targetElement}
             onChange={(e) => setTargetElement(e.target.value)}
             placeholder="Enter element name"
+            style={{
+              backgroundColor: 'white',
+              color: 'black',
+              border: '1px solid black',
+              borderRadius: '4px',
+              padding: '6px 8px',
+              marginLeft: '5px',
+            }}
           />
         </label>
         <button onClick={performSearch} style={{ marginLeft: '10px' }}>
