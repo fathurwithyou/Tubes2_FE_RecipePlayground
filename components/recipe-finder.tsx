@@ -3,7 +3,7 @@
 import type React from "react";
 
 import { useState, useEffect } from "react";
-import { Search, Clock, Hash, Beaker, FlaskConical } from "lucide-react";
+import { Search, Clock, Hash, Beaker, FlaskConical, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,6 +14,7 @@ import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { fetchElements, searchRecipes } from "@/lib/api";
 
+// Types
 interface Element {
   id: number;
   name: string;
@@ -42,7 +43,7 @@ export default function RecipeFinder() {
   const [targetElement, setTargElement] = useState<string>("");
   const [algorithm, setAlgorithm] = useState<"bfs" | "dfs">("bfs");
   const [maxRecipes, setMaxRecipes] = useState<number>(5);
-  const [maxRecipesInput, setMaxRecipesInput] = useState<string>("5");
+  const [maxRecipesInput, setMaxRecipesInput] = useState<string>("5"); 
   const [loading, setLoading] = useState<boolean>(false);
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -92,7 +93,7 @@ export default function RecipeFinder() {
 
       setSearchResult(result);
       setExecutionTime(timeInSeconds);
-      setVisitedNodes(result.visitedNodes || Math.floor(Math.random() * 100) + 20);
+      setVisitedNodes(result.visitedNodes || Math.floor(Math.random() * 100) + 20); // Fallback to random number if not provided
     } catch (err: any) {
       setError(err.message || "Failed to search for recipes. Please try again.");
       console.error(err);
@@ -177,6 +178,7 @@ export default function RecipeFinder() {
                   onChange={handleMaxRecipesChange}
                   className="mt-2 border-purple-800 bg-black/60 text-white"
                 />
+                <p className="text-xs text-gray-400 mt-1">Higher values will use multithreading for faster processing</p>
               </div>
 
               <Button
@@ -229,6 +231,12 @@ export default function RecipeFinder() {
                   <FlaskConical className="mr-2 h-5 w-5 text-purple-400" />
                   <span className="text-sm font-medium text-gray-300">
                     Algorithm: {algorithm === "bfs" ? "BFS (Breadth-First)" : "DFS (Depth-First)"}
+                  </span>
+                </div>
+                <div className="flex items-center">
+                  <Layers className="mr-2 h-5 w-5 text-cyan-400" />
+                  <span className="text-sm font-medium text-gray-300">
+                    Multithreading: {maxRecipes > 1 ? "Enabled" : "Disabled"}
                   </span>
                 </div>
               </div>
