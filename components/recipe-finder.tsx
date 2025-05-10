@@ -1,118 +1,117 @@
-"use client";
+"use client"
 
-import type React from "react";
+import type React from "react"
 
-import { useState, useEffect } from "react";
-import { Search, Clock, Hash, Beaker, FlaskConical, Layers } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import RecipeTree from "@/components/recipe-tree";
-import { Loader2 } from "lucide-react";
-import { motion } from "framer-motion";
-import { fetchElements, searchRecipes } from "@/lib/api";
+import { useState, useEffect } from "react"
+import { Search, Clock, Hash, Beaker, FlaskConical, Layers } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import RecipeTree from "@/components/recipe-tree"
+import { Loader2 } from "lucide-react"
+import { motion } from "framer-motion"
+import { fetchElements, searchRecipes } from "@/lib/api"
 
-// Types
 interface Element {
-  id: number;
-  name: string;
-  emoji?: string;
-  isBasic: boolean;
+  id: number
+  name: string
+  emoji?: string
+  isBasic: boolean
 }
 
 interface Recipe {
-  result: Element;
-  ingredients: Element[];
+  result: Element
+  ingredients: Element[]
 }
 
 interface RecipeNode {
-  element: Element;
-  children: RecipeNode[][];
+  element: Element
+  children: RecipeNode[][]
 }
 
 interface SearchResult {
-  recipes: RecipeNode;
-  visitedNodes: number;
-  searchTime: number;
+  recipes: RecipeNode
+  visitedNodes: number
+  searchTime: number
 }
 
 export default function RecipeFinder() {
-  const [elements, setElements] = useState<Element[]>([]);
-  const [targetElement, setTargElement] = useState<string>("");
-  const [algorithm, setAlgorithm] = useState<"bfs" | "dfs">("bfs");
-  const [maxRecipes, setMaxRecipes] = useState<number>(5);
-  const [maxRecipesInput, setMaxRecipesInput] = useState<string>("5"); 
-  const [loading, setLoading] = useState<boolean>(false);
-  const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [executionTime, setExecutionTime] = useState<number>(0);
-  const [visitedNodes, setVisitedNodes] = useState<number>(0);
+  const [elements, setElements] = useState<Element[]>([])
+  const [targetElement, setTargElement] = useState<string>("")
+  const [algorithm, setAlgorithm] = useState<"bfs" | "dfs">("bfs")
+  const [maxRecipes, setMaxRecipes] = useState<number>(5)
+  const [maxRecipesInput, setMaxRecipesInput] = useState<string>("5") // Separate state for input
+  const [loading, setLoading] = useState<boolean>(false)
+  const [searchResult, setSearchResult] = useState<SearchResult | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [executionTime, setExecutionTime] = useState<number>(0)
+  const [visitedNodes, setVisitedNodes] = useState<number>(0)
 
   useEffect(() => {
     const getElements = async () => {
       try {
-        setLoading(true);
-        const elementsData = await fetchElements();
-        setElements(elementsData);
+        setLoading(true)
+        const elementsData = await fetchElements()
+        setElements(elementsData)
       } catch (err) {
-        console.error("Failed to fetch elements:", err);
-        setError("Failed to load elements. Please refresh the page.");
+        console.error("Failed to fetch elements:", err)
+        setError("Failed to load elements. Please refresh the page.")
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    getElements();
-  }, []);
+    getElements()
+  }, [])
 
   const handleSearch = async () => {
     if (!targetElement) {
-      setError("Please select a target element");
-      return;
+      setError("Please select a target element")
+      return
     }
 
-    setLoading(true);
-    setError(null);
-    setSearchResult(null);
-    setExecutionTime(0);
-    setVisitedNodes(0);
+    setLoading(true)
+    setError(null)
+    setSearchResult(null)
+    setExecutionTime(0)
+    setVisitedNodes(0)
 
     try {
-      const startTime = performance.now();
+      const startTime = performance.now()
 
       const result = await searchRecipes({
         method: algorithm,
         target: targetElement,
         maxRecipes: maxRecipes,
-      });
+      })
 
-      const endTime = performance.now();
-      const timeInSeconds = (endTime - startTime) / 1000;
+      const endTime = performance.now()
+      const timeInSeconds = (endTime - startTime) / 1000
 
-      setSearchResult(result);
-      setExecutionTime(timeInSeconds);
-      setVisitedNodes(result.visitedNodes || Math.floor(Math.random() * 100) + 20); // Fallback to random number if not provided
+      setSearchResult(result)
+      setExecutionTime(timeInSeconds)
+      setVisitedNodes(result.visitedNodes || Math.floor(Math.random() * 100) + 20) // Fallback to random number if not provided
     } catch (err: any) {
-      setError(err.message || "Failed to search for recipes. Please try again.");
-      console.error(err);
+      setError(err.message || "Failed to search for recipes. Please try again.")
+      console.error(err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleMaxRecipesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    setMaxRecipesInput(inputValue);
+    const inputValue = e.target.value
+    setMaxRecipesInput(inputValue)
 
-    const numValue = Number.parseInt(inputValue);
+    const numValue = Number.parseInt(inputValue)
     if (!isNaN(numValue) && numValue > 0) {
-      setMaxRecipes(numValue);
+      setMaxRecipes(numValue)
     } else if (inputValue === "") {
-      setMaxRecipes(1);
+      setMaxRecipes(1)
     }
-  };
+  }
 
   return (
     <div className="space-y-6">
@@ -124,82 +123,80 @@ export default function RecipeFinder() {
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-6">
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="algorithm" className="text-gray-300">
-                  Algorithm
-                </Label>
-                <Select defaultValue="bfs" onValueChange={(value) => setAlgorithm(value as "bfs" | "dfs")}>
-                  <SelectTrigger id="algorithm" className="mt-2 border-purple-800 bg-black/60 text-white">
-                    <SelectValue placeholder="Select algorithm" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-900 border-purple-800">
-                    <SelectItem value="bfs" className="text-purple-400">
-                      Breadth-First Search (BFS)
-                    </SelectItem>
-                    <SelectItem value="dfs" className="text-cyan-400">
-                      Depth-First Search (DFS)
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="target" className="text-gray-300">
-                  Target Element
-                </Label>
-                <Select onValueChange={setTargElement}>
-                  <SelectTrigger id="target" className="mt-2 border-purple-800 bg-black/60 text-white">
-                    <SelectValue placeholder="Select element" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-900 border-purple-800 max-h-[300px]">
-                    {elements.map((element) => (
-                      <SelectItem key={element.id} value={element.name} className="text-white">
-                        {element.emoji || "🧪"} {element.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          {/* Changed from grid to flex column layout */}
+          <div className="flex flex-col space-y-6">
+            <div>
+              <Label htmlFor="algorithm" className="text-gray-300">
+                Algorithm
+              </Label>
+              <Select defaultValue="bfs" onValueChange={(value) => setAlgorithm(value as "bfs" | "dfs")}>
+                <SelectTrigger id="algorithm" className="mt-2 border-purple-800 bg-black/60 text-white">
+                  <SelectValue placeholder="Select algorithm" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-900 border-purple-800">
+                  <SelectItem value="bfs" className="text-purple-400">
+                    Breadth-First Search (BFS)
+                  </SelectItem>
+                  <SelectItem value="dfs" className="text-cyan-400">
+                    Depth-First Search (DFS)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="max-recipes" className="text-gray-300">
-                  Maximum Recipes
-                </Label>
-                <Input
-                  id="max-recipes"
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={maxRecipesInput}
-                  onChange={handleMaxRecipesChange}
-                  className="mt-2 border-purple-800 bg-black/60 text-white"
-                />
-                <p className="text-xs text-gray-400 mt-1">Higher values will use multithreading for faster processing</p>
-              </div>
-
-              <Button
-                className="w-full mt-6 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white border-0"
-                onClick={handleSearch}
-                disabled={loading}>
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Searching...
-                  </>
-                ) : (
-                  <>
-                    <Search className="mr-2 h-4 w-4" />
-                    Find Recipes
-                  </>
-                )}
-              </Button>
-
-              {error && <p className="text-sm text-red-400 mt-2">{error}</p>}
+            <div>
+              <Label htmlFor="target" className="text-gray-300">
+                Target Element
+              </Label>
+              <Select onValueChange={setTargElement}>
+                <SelectTrigger id="target" className="mt-2 border-purple-800 bg-black/60 text-white">
+                  <SelectValue placeholder="Select element" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-900 border-purple-800 max-h-[300px]">
+                  {elements.map((element) => (
+                    <SelectItem key={element.id} value={element.name} className="text-white">
+                      {element.emoji || "🧪"} {element.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+
+            <div>
+              <Label htmlFor="max-recipes" className="text-gray-300">
+                Maximum Recipes
+              </Label>
+              <Input
+                id="max-recipes"
+                type="number"
+                min="1"
+                max="20"
+                value={maxRecipesInput}
+                onChange={handleMaxRecipesChange}
+                className="mt-2 border-purple-800 bg-black/60 text-white"
+              />
+              <p className="text-xs text-gray-400 mt-1">Higher values will use multithreading for faster processing</p>
+            </div>
+
+            <Button
+              className="w-full mt-4 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white border-0"
+              onClick={handleSearch}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Searching...
+                </>
+              ) : (
+                <>
+                  <Search className="mr-2 h-4 w-4" />
+                  Find Recipes
+                </>
+              )}
+            </Button>
+
+            {error && <p className="text-sm text-red-400 mt-2">{error}</p>}
           </div>
         </CardContent>
       </Card>
@@ -209,7 +206,8 @@ export default function RecipeFinder() {
           className="space-y-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}>
+          transition={{ duration: 0.5 }}
+        >
           <Card className="border-purple-900 bg-black/40 shadow-lg backdrop-blur-sm">
             <CardHeader className="bg-gradient-to-r from-purple-900/40 to-cyan-900/40 rounded-t-lg border-b border-purple-800/50">
               <CardTitle className="flex items-center text-white">
@@ -249,5 +247,5 @@ export default function RecipeFinder() {
         </motion.div>
       )}
     </div>
-  );
+  )
 }
