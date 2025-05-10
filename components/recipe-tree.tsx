@@ -26,6 +26,11 @@ const nodeTypes = {
   element: ElementNode,
 };
 
+const NODE_WIDTH = 150;
+const NODE_HEIGHT = 60;
+const HORIZONTAL_SPACING = 180;
+const VERTICAL_SPACING = 120;
+
 export default function RecipeTree({ recipe }: RecipeTreeProps) {
   const { nodes: initialNodes, edges: initialEdges, levels } = convertRecipeToGraph(recipe);
 
@@ -142,22 +147,37 @@ function convertRecipeToGraph(recipe: RecipeNode) {
   const levels: { level: number; nodeIds: string[]; edgeIds: string[] }[] = [];
   let nodeId = 0;
 
-  const maxDepth = getMaxDepth(recipe);
-  for (let i = 0; i <= maxDepth; i++) {
+  const treeInfo = analyzeTree(recipe);
+  const maxWidth = Math.max(...Object.values(treeInfo.levelWidths));
+
+  for (let i = 0; i <= treeInfo.maxDepth; i++) {
     levels.push({ level: i, nodeIds: [], edgeIds: [] });
   }
 
-  function processNode(node: RecipeNode, x: number, y: number, depth: number, parentId?: string): string {
+  function processNode(
+    node: RecipeNode,
+    x: number,
+    y: number,
+    depth: number,
+    horizontalIndex: number,
+    parentId?: string
+  ): string {
     const id = `node-${nodeId++}`;
+
+    const levelWidth = treeInfo.levelWidths[depth];
+    const totalWidth = levelWidth * HORIZONTAL_SPACING;
+    const startX = -totalWidth / 2;
+    const nodeX = startX + horizontalIndex * HORIZONTAL_SPACING;
 
     nodes.push({
       id,
       type: "element",
-      position: { x, y },
+      position: { x: nodeX, y },
       data: {
         element: node.element,
         depth: depth,
       },
+
       sourcePosition: Position.Top,
       targetPosition: Position.Bottom,
     });
@@ -172,18 +192,24 @@ function convertRecipeToGraph(recipe: RecipeNode) {
         target: id,
         type: "default",
         style: { stroke: "#9333ea", strokeWidth: 1.5 },
+
+        sourceHandle: "bottom",
+        targetHandle: "top",
       });
       levels[depth].edgeIds.push(edgeId);
     }
 
     if (node.children.length > 0) {
-      const childrenWidth = 200 * node.children.length;
-      let startX = x - childrenWidth / 2 + 100;
+      const childIndices = treeInfo.nodeChildrenIndices[`${depth}-${horizontalIndex}`] || [];
 
-      node.children.forEach((combination, i) => {
+      node.children.forEach((combination, combinationIndex) => {
         if (combination.length === 2) {
-          const leftId = processNode(combination[0], startX - 100, y + 150, depth + 1);
-          const rightId = processNode(combination[1], startX + 100, y + 150, depth + 1);
+          const leftChildIndex = childIndices[combinationIndex * 2];
+          const rightChildIndex = childIndices[combinationIndex * 2 + 1];
+
+          const leftId = processNode(combination[0], 0, y + VERTICAL_SPACING, depth + 1, leftChildIndex);
+
+          const rightId = processNode(combination[1], 0, y + VERTICAL_SPACING, depth + 1, rightChildIndex);
 
           const combineEdgeId = `combine-${leftId}-${rightId}`;
           edges.push({
@@ -192,6 +218,15 @@ function convertRecipeToGraph(recipe: RecipeNode) {
             target: rightId,
             type: "default",
             style: { stroke: "#06b6d4", strokeWidth: 2 },
+
+            sourceHandle: "top",
+            targetHandle: "top",
+
+            label: "+",
+            labelStyle: { fill: "#06b6d4", fontWeight: "bold" },
+            labelBgStyle: { fill: "rgba(0, 0, 0, 0.7)", fillOpacity: 0.7 },
+            labelBgPadding: [4, 2],
+            labelBgBorderRadius: 4,
           });
           levels[depth + 1].edgeIds.push(combineEdgeId);
 
@@ -202,6 +237,8 @@ function convertRecipeToGraph(recipe: RecipeNode) {
             target: id,
             type: "default",
             style: { stroke: "#06b6d4", strokeDasharray: "5,5" },
+            sourceHandle: "top",
+            targetHandle: "bottom",
           });
           levels[depth + 1].edgeIds.push(resultLeftEdgeId);
 
@@ -212,20 +249,62 @@ function convertRecipeToGraph(recipe: RecipeNode) {
             target: id,
             type: "default",
             style: { stroke: "#06b6d4", strokeDasharray: "5,5" },
+            sourceHandle: "top",
+            targetHandle: "bottom",
           });
           levels[depth + 1].edgeIds.push(resultRightEdgeId);
         }
-
-        startX += 300;
       });
     }
 
     return id;
   }
 
-  processNode(recipe, 0, 0, 0);
+  processNode(recipe, 0, 0, 0, Math.floor(treeInfo.levelWidths[0] / 2));
 
   return { nodes, edges, levels };
+}
+
+function analyzeTree(recipe: RecipeNode) {
+  const levelWidths: Record<number, number> = {};
+  const nodeChildrenIndices: Record<string, number[]> = {};
+  let maxDepth = 0;
+
+  function countNodesAtLevels(node: RecipeNode, depth: number, horizontalIndex: number) {
+    maxDepth = Math.max(maxDepth, depth);
+
+    levelWidths[depth] = (levelWidths[depth] || 0) + 1;
+
+    if (node.children.length > 0) {
+      const nodeKey = `${depth}-${horizontalIndex}`;
+      nodeChildrenIndices[nodeKey] = [];
+
+      let nextChildIndex = 0;
+      if (depth + 1 in levelWidths) {
+        nextChildIndex = levelWidths[depth + 1];
+      }
+
+      node.children.forEach((combination) => {
+        if (combination.length === 2) {
+          nodeChildrenIndices[nodeKey].push(nextChildIndex, nextChildIndex + 1);
+
+          countNodesAtLevels(combination[0], depth + 1, nextChildIndex);
+          nextChildIndex++;
+
+          countNodesAtLevels(combination[1], depth + 1, nextChildIndex);
+          nextChildIndex++;
+        }
+      });
+    }
+  }
+
+  countNodesAtLevels(recipe, 0, 0);
+
+  return {
+    levelWidths,
+    nodeChildrenIndices,
+    maxDepth,
+  };
 }
 
 function getMaxDepth(node: RecipeNode, currentDepth = 0): number {

@@ -92,7 +92,7 @@ export default function RecipeFinder() {
 
       setSearchResult(result)
       setExecutionTime(timeInSeconds)
-      setVisitedNodes(result.visitedNodes || Math.floor(Math.random() * 100) + 20) // Fallback to random number if not provided
+      setVisitedNodes(result.visitedNodes) 
     } catch (err: any) {
       setError(err.message || "Failed to search for recipes. Please try again.")
       console.error(err)
