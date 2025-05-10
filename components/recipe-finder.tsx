@@ -123,7 +123,6 @@ export default function RecipeFinder() {
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-6">
-          {/* Changed from grid to flex column layout */}
           <div className="flex flex-col space-y-6">
             <div>
               <Label htmlFor="algorithm" className="text-gray-300">
