@@ -42,7 +42,7 @@ export default function RecipeFinder() {
   const [targetElement, setTargElement] = useState<string>("")
   const [algorithm, setAlgorithm] = useState<"bfs" | "dfs">("bfs")
   const [maxRecipes, setMaxRecipes] = useState<number>(5)
-  const [maxRecipesInput, setMaxRecipesInput] = useState<string>("5") // Separate state for input
+  const [maxRecipesInput, setMaxRecipesInput] = useState<string>("5") 
   const [loading, setLoading] = useState<boolean>(false)
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -108,8 +108,13 @@ export default function RecipeFinder() {
     const numValue = Number.parseInt(inputValue)
     if (!isNaN(numValue) && numValue > 0) {
       setMaxRecipes(numValue)
+      setMaxRecipesInput(numValue.toString())
     } else if (inputValue === "") {
       setMaxRecipes(1)
+    } setMaxRecipesInput("1")
+    if (numValue <= 0) {
+      setMaxRecipes(1)
+      setMaxRecipesInput("1")
     }
   }
 
