@@ -71,6 +71,12 @@ export default function RecipeFinder() {
       setError("Please select a target element");
       return;
     }
+    // check for number
+    const numMaxRecipes = Number.parseInt(maxRecipesInput);
+    if (isNaN(numMaxRecipes) || numMaxRecipes <= 0) {
+      setError("Please enter a valid number for maximum recipes");
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -109,12 +115,6 @@ export default function RecipeFinder() {
     if (!isNaN(numValue) && numValue > 0) {
       setMaxRecipes(numValue);
       setMaxRecipesInput(numValue.toString());
-    } else if (inputValue === "") {
-      setMaxRecipes(1);
-      setMaxRecipesInput("1");
-    } else if (numValue <= 0) {
-      setMaxRecipes(1);
-      setMaxRecipesInput("1");
     }
   };
 
