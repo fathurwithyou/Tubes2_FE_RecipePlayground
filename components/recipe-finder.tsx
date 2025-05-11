@@ -233,7 +233,7 @@ export default function RecipeFinder() {
                 <div className="flex items-center">
                   <Layers className="mr-2 h-5 w-5 text-cyan-400" />
                   <span className="text-sm font-medium text-gray-300">
-                    Multithreading: {maxRecipes > 1 ? "Enabled" : "Disabled"}
+                    Multithreading: Enabled
                   </span>
                 </div>
               </div>
